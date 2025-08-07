@@ -3,8 +3,6 @@ module my_addr::tournament {
     use std::vector;
     use aptos_framework::event;
     use aptos_framework::timestamp;
-
-    /// Tournament struct to store tournament data
     struct Tournament has key, store {
         id: u64,
         name: vector<u8>,
@@ -14,38 +12,28 @@ module my_addr::tournament {
         is_active: bool,
         created_at: u64,
     }
-
-    /// Match struct for bracket matches
     struct Match has store, copy, drop {
         player1: address,
         player2: address,
         winner: address,
         round: u8,
-    }
-
-    /// Tournament created event
+    }    
     #[event]
     struct TournamentCreated has drop, store {
         tournament_id: u64,
         creator: address,
         name: vector<u8>,
     }
-
-    /// Match completed event
     #[event]
     struct MatchCompleted has drop, store {
         tournament_id: u64,
         winner: address,
         round: u8,
     }
-
-    /// Error codes
     const E_TOURNAMENT_EXISTS: u64 = 1;
     const E_NOT_TOURNAMENT_OWNER: u64 = 2;
     const E_INSUFFICIENT_PARTICIPANTS: u64 = 3;
-    const E_TOURNAMENT_NOT_ACTIVE: u64 = 4;
-
-    /// Function 1: Create a new tournament with participants
+    const E_TOURNAMENT_NOT_ACTIVE: u64 = 4;    
     public entry fun create_tournament(
         creator: &signer,
         tournament_id: u64,
@@ -53,34 +41,23 @@ module my_addr::tournament {
         participants: vector<address>
     ) {
         let creator_addr = signer::address_of(creator);
-        
-        // Check if tournament already exists
-        assert!(!exists<Tournament>(creator_addr), E_TOURNAMENT_EXISTS);
-        
-        // Ensure minimum participants for bracket
-        assert!(vector::length(&participants) >= 2, E_INSUFFICIENT_PARTICIPANTS);
-
-        // Create initial bracket matches for first round
+        assert!(!exists<Tournament>(creator_addr), E_TOURNAMENT_EXISTS);        
+        assert!(vector::length(&participants) >= 2, E_INSUFFICIENT_PARTICIPANTS);        
         let brackets = vector::empty<Match>();
         let i = 0;
-        let len = vector::length(&participants);
-        
+        let len = vector::length(&participants);        
         while (i < len - 1) {
             let player1 = *vector::borrow(&participants, i);
             let player2 = *vector::borrow(&participants, i + 1);
-            
             let match = Match {
                 player1,
                 player2,
                 winner: @0x0,
                 round: 1,
-            };
-            
+            };            
             vector::push_back(&mut brackets, match);
             i = i + 2;
         };
-
-        // Create tournament resource
         let tournament = Tournament {
             id: tournament_id,
             name,
@@ -90,19 +67,13 @@ module my_addr::tournament {
             is_active: true,
             created_at: timestamp::now_seconds(),
         };
-
-        // Emit tournament created event
         event::emit(TournamentCreated {
             tournament_id,
             creator: creator_addr,
             name,
         });
-
-        // Move tournament to creator's account
         move_to(creator, tournament);
     }
-
-    /// Function 2: Complete a match and advance winner to next round
     public entry fun complete_match(
         tournament_owner: &signer,
         match_index: u64,
@@ -110,22 +81,14 @@ module my_addr::tournament {
     ) acquires Tournament {
         let owner_addr = signer::address_of(tournament_owner);
         let tournament = borrow_global_mut<Tournament>(owner_addr);
-        
-        // Check tournament is active
         assert!(tournament.is_active, E_TOURNAMENT_NOT_ACTIVE);
-        
-        // Update match winner
         let match = vector::borrow_mut(&mut tournament.brackets, match_index);
         match.winner = winner;
-
-        // Emit match completed event
         event::emit(MatchCompleted {
             tournament_id: tournament.id,
             winner,
             round: match.round,
-        });
-
-        // Check if this was the final match
+        });        
         if (vector::length(&tournament.brackets) == 1) {
             tournament.winner = winner;
             tournament.is_active = false;
