@@ -1,0 +1,16 @@
+[package]
+name = "TournamentManager"
+version = "1.0.0"
+authors = []
+
+[addresses]
+my_addr="3c63bfd84daf3d17c2c36cd8674c7e243f0ddad694278bdaead2371b0c3b8ee5"
+
+[dev-addresses]
+
+[dependencies.AptosFramework]
+git = "https://github.com/aptos-labs/aptos-framework.git"
+rev = "mainnet"
+subdir = "aptos-framework"
+
+[dev-dependencies]
