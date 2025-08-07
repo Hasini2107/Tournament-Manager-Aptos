@@ -34,4 +34,5 @@ Our vision is to revolutionize tournament management by leveraging blockchain te
 
 ## Contract Details
 0x5c17f97c5be8eb3a97e590b0abb56be17874b3f5a4eeb9db2c99739605a1f818
-![alt text](image.png)
+
+<img width="1835" height="900" alt="Screenshot 2025-08-07 144525" src="https://github.com/user-attachments/assets/e4d78684-9a3f-4afd-8662-29571a0b19a1" />
